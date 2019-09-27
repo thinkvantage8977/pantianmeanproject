@@ -10,7 +10,13 @@
       />
       <button v-on:click="getImageUrls">Search</button>
 
-      <div class="div" id="images-container">
+      <div
+        class="div"
+        id="images-container"
+        v-infinite-scroll="load"
+        infinite-scroll-disabled="busy"
+        infinite-scroll-distance="10"
+      >
         <img
           class="image col-sm-3"
           v-for="(imageUrl,index) in loadedImageUrls"
@@ -33,7 +39,8 @@ export default {
       keyword: "",
       loadedImageUrls: [],
       receivedImageUrls: [],
-      currentIndex: 0
+      currentIndex: 0,
+      busy: false
     };
   },
   methods: {
@@ -48,14 +55,21 @@ export default {
           `http://farm${url.farm}.static.flickr.com/${url.server}/${url.id}_${url.secret}.jpg`
         );
       }
-      this.load(20);
+      this.load();
     },
-    load(newLoadImageCount) {
-      this.loadedImageUrls.push.apply(
-        this.loadedImageUrls,
-        this.receivedImageUrls.slice(this.currentIndex, this.currentIndex + newLoadImageCount)
-      );
-      this.currentIndex += newLoadImageCount;
+    load() {
+      if (this.currentIndex <= this.receivedImageUrls.length) {
+        this.busy = true;
+        this.loadedImageUrls.push.apply(
+          this.loadedImageUrls,
+          this.receivedImageUrls.slice(
+            this.currentIndex,
+            this.currentIndex + 20
+          )
+        );//TODO: might need load time...
+        this.busy = false;
+        this.currentIndex += 20;
+      }
     }
   },
   props: {
